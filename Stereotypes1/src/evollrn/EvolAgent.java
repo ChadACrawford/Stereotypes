@@ -15,41 +15,68 @@ class EvolPopulation {
 	
 	public EvolPopulation(Constraints con) {
 		c = con;
-		sim = new Simulator(new StaticAgentGenerator.SAG2(c.TAG_SIZE),c.STATIC_POOL_SIZE);
-		lgen = new LearningAgentGenerator.LAG2(c.TAG_SIZE);
+		sim = new Simulator(new StaticAgentGenerator.SAG3(c.TAG_SIZE),c.STATIC_POOL_SIZE);
+		lgen = new LearningAgentGenerator.LAG1(c.TAG_SIZE);
 		lagents = lgen.generate(c.POOL_SIZE);
 	}
 	
 	public void evolve() {
 		for(int i = 0; i < c.LIFETIME; i++) {
-			System.out.println("\nGeneration " + (i+1));
+			if(i % 100 == 0) {
+				System.out.println("\nGeneration " + (i+1));
+				printFitnessTable();
+			}
 			//int[] lpays = fitnessTable();
-			lagents = select();
+			lagents = selectTournament();
 			lagents = mutate();
 			//int[] npays = fitnessTable();
 			//if(Arrays.equals(lpays, npays)) lagents = lgen.generate(c.POOL_SIZE);
-			printFitnessTable();
 		}
 	}
 	
-	public LearningAgent[] select() {
+	public double fitness(Agent a) {
+		double weight = 0;
+		Simulator.gTuple[] res = sim.interactWith(a);
+		for(Simulator.gTuple r: res) {
+			if     (r.c1 && r.c2) weight += 1;
+			else if(!r.c1 && r.c2) weight += .5;
+			else if(r.c1 && !r.c2) weight += .5;
+			else weight += 0;
+		}
+		return weight;
+	}
+	
+	public LearningAgent[] selectFProportionate() {
 		//generate fitness utility
 		WeightedList<LearningAgent> wl = new WeightedList<LearningAgent>();
 		for(LearningAgent a: lagents) {
-			double weight = 0;
-			Simulator.gTuple[] res = sim.interactWith(a);
-			for(Simulator.gTuple r: res) {
-				if (r.c1 && r.c2) weight +=100;
-				else if(r.c1 || r.c2) weight += 1;
-				else weight += 0;
-			}
-			Match m1 = new MatchString(Arrays.copyOf(((MatchString)a.m).ms,c.TAG_SIZE));
-			wl.add(new LearningAgent(new Tag(a.t),m1), weight);
+			double weight = fitness(a);
+			wl.add(new LearningAgent(new Tag(a.t),MatchString.copy(a.m)), weight);
 		}
 		
 		LearningAgent[] newL = new LearningAgent[c.POOL_SIZE];
 		for(int i = 0; i < newL.length; i++) newL[i] = wl.probSelect();
 		
+		return newL;
+	}
+	
+	public LearningAgent[] selectTournament() {
+		LearningAgent[] newL = new LearningAgent[c.POOL_SIZE];
+		for(int i = 0; i < c.POOL_SIZE; i++) {
+			LearningAgent a = lagents[rand.nextInt(c.POOL_SIZE)],
+					b = lagents[rand.nextInt(c.POOL_SIZE)];
+			double aF = fitness(a), bF = fitness(b);
+			if(bF > aF) { 
+				LearningAgent temp = a;
+				a = b;
+				b = temp;
+			}
+			
+			if(rand.nextDouble() < c.SELECT_TOURNAMENT_P)
+				newL[i] = new LearningAgent(new Tag(a.t),MatchString.copy(a.m));
+			else
+				newL[i] = new LearningAgent(new Tag(b.t),MatchString.copy(b.m));
+		}
 		return newL;
 	}
 	

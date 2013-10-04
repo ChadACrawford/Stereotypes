@@ -54,4 +54,23 @@ public abstract class StaticAgentGenerator {
 			return agents;
 		}
 	}
+	
+	public static class SAG3 extends StaticAgentGenerator {
+		final double PROB_WILD = 0.2;
+		public SAG3(int tagSize) {
+			super(tagSize);
+		}
+
+		// Random tag, general match.
+		public StaticAgent[] generate(int amount) {
+			StaticAgent[] agents = new StaticAgent[amount];
+			int[] baseTag = randStr(tagSize,2);
+			for (int i = 0; i < amount; i++) {
+				Tag t = new Tag(Arrays.copyOf(baseTag,tagSize));
+				Match m = new MatchString(randStr(tagSize,3));
+				agents[i] = new StaticAgent(t,m);
+			}
+			return agents;
+		}
+	}
 }
