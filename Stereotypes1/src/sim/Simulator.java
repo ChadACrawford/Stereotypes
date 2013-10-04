@@ -7,7 +7,7 @@
 
 package sim;
 
-class Simulator {
+public class Simulator {
     StaticAgentGenerator sag;
     StaticAgent[] agents;
 
@@ -16,7 +16,7 @@ class Simulator {
 	agents = sag.generate(poolSize);
     }
 
-    class gTuple { boolean c1,c2; Tag t2;
+    public class gTuple { public boolean c1,c2; public Tag t2;
 	public gTuple(boolean a, boolean b, Tag c)
 	 {c1 = a; c2 = b; t2 = c;}}
     public gTuple[] interactWith(Agent a) {

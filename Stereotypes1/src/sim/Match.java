@@ -1,7 +1,7 @@
 
 package sim;
 
-abstract class Match {
+public abstract class Match {
     public Match() {
     }
 
