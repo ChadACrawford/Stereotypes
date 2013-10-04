@@ -1,5 +1,8 @@
 
 package sim;
 
-class StaticAgent extends Agent {
+public class StaticAgent extends Agent {
+	public StaticAgent(Tag t, Match m) {
+		super(t, m);
+	}
 }

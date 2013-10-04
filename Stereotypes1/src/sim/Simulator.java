@@ -26,6 +26,7 @@ class Simulator {
 				agents[i].cooperate(a),
 				agents[i].t);
 	}
+	return ret;
     }
 
 }

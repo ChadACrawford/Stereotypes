@@ -21,8 +21,8 @@ abstract class StaticAgentGenerator {
 	public StaticAgent[] generate(int amount) {
 	    StaticAgent[] agents = new StaticAgent[amount];
 	    for (int i = 0; i < amount; i++) {
-		Tag t = new Tag(randStr(tagSize),2);
-		Match m = new Match(randStr(tagSize),3);
+		Tag t = new Tag(randStr(tagSize,2));
+		Match m = new MatchString(randStr(tagSize,3));
 		agents[i] = new StaticAgent(t,m);
 	    }
 	    return agents;

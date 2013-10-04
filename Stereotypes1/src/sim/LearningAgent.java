@@ -1,5 +1,5 @@
 
 package sim;
 
-class LearningAgent {
+public class LearningAgent {
 }
