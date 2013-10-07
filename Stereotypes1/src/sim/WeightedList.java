@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class WeightedList<T> {
-	static Random rand = new Random();
+	static Random rand = Parameters.rand;
 	
 	class WTuple { T item; double weight; }
 	ArrayList<WTuple> items = new ArrayList<WTuple>();

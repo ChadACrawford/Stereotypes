@@ -1,14 +1,30 @@
 
 package sim;
 
-public class MatchSim extends Match {
-    int ms[];
-    Tag t;
-    public MatchSim(int[] ms, Tag t) { this.ms = ms; }
+import java.util.Arrays;
+
+public class MatchSim extends MatchString {
+    int minHam; int maxHam;
+    public MatchSim(Tag t, int minHam, int maxHam) { 
+    	super(Arrays.copyOf(t.ts, t.ts.length)); 
+    	this.minHam = minHam;
+    	this.maxHam = maxHam;
+    	}
 
     public boolean matchWith(Tag t2) {
-	for(int i = 0; i < ms.length; i++)
-	    if(ms[i] == 1 && t.ts[i] != t2.ts[i]) return false;
-	return true;
+    	int matches = 0;
+    	for(int i = 0; i < ms.length; i++)
+    		if(ms[i] == t2.ts[i]) matches++;
+    	return (matches >= minHam && matches <= maxHam);
     }
+
+	@Override
+	public void mutate() {
+		throw new RuntimeException();
+	}
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return super.toString();
+	}
 }
