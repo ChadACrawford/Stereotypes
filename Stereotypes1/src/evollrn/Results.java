@@ -1,13 +1,11 @@
 package evollrn;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
-import sim.LearningAgent;
 
 public class Results {
 	public static FileWriter[] writers;
@@ -60,6 +58,8 @@ public class Results {
 	public double[] payoffs;
 	private int pCount = 0;
 	
+	public int[] plays = new int[4];
+	
 	public Results(int genNumber, Constraints c) {
 		this.genNumber = genNumber;
 		payoffs = new double[c.POOL_SIZE];
@@ -81,24 +81,25 @@ public class Results {
 	}
 	
 	public class Group {
-		int hash;
+		Object o;
 		int size = 1;
 	}
+	
 	void resetGroups() { Mgroups.clear(); Tgroups.clear(); }
 	void addMember(LearningAgent a) {
 		boolean isInM = false;
-		for(Group g: Mgroups) if(g.hash == a.m.hashCode()) { g.size++; isInM = true; }
+		for(Group g: Mgroups) if(g.o.equals(a.m)) { g.size++; isInM = true; break; }
 		if(!isInM) {
 			Group g = new Group();
-			g.hash = a.m.hashCode();
+			g.o = a.m;
 			Mgroups.add(g);
 		}
 		
 		boolean isInT = false;
-		for(Group g: Tgroups) if(g.hash == a.t.hashCode()) { g.size++; isInT = true; }
+		for(Group g: Tgroups) if(g.o.equals(a.t)) { g.size++; isInT = true; break; }
 		if(!isInT) {
 			Group g = new Group();
-			g.hash = a.t.hashCode();
+			g.o = a.t;
 			Tgroups.add(g);
 		}
 	}
@@ -149,14 +150,14 @@ public class Results {
 		@Override
 		void write(Results r, FileWriter fw) throws IOException {
 			DescriptiveStatistics ds = new DescriptiveStatistics(r.payoffs);
-			double mean = ds.getMean(),						//2
-					stdev = ds.getStandardDeviation(),		//3
-					ubound = mean+stdev,					//4
-					lbound = mean-stdev,					//5
+			double mean = ds.getPercentile(50),						//2
+					stdev = 0,		//3
+					ubound = ds.getPercentile(75),					//4
+					lbound = ds.getPercentile(25),					//5
 					min = ds.getMin(),						//6
 					max = ds.getMax();						//7
 			String row = genRow(r.genNumber,mean,stdev,lbound,min,max,ubound);
-			System.out.println(row);
+			//System.out.println(row);
 			fw.write(row + "\n");
 		}
 	}

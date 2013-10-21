@@ -30,7 +30,6 @@ public class Tag {
 		}
 		return true;
 	}
-	
 	public int hashCode() {
 		int hash = 0;
 		for(int i = 0; i < ts.length; i++) {

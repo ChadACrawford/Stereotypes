@@ -1,64 +1,72 @@
 package sim;
 
-import java.util.Random;
-
-import evollrn.Constraints;
-
-import sim.Match;
-import sim.Tag;
+import java.util.ArrayList;
 
 public class MatchDT extends Match {
-	public static final Random rand = Parameters.rand;
-	final int TAG_SIZE;
-	
-	public MatchDT(int[] ms, int TAG_SIZE) {
-		this.ms = ms;
-		this.TAG_SIZE = TAG_SIZE;
-	}
-	@Override
-	public boolean matchWith(Tag t) {
-		return match(t, 0);
-	}
-	public boolean match(Tag t, int index)
-	{
-		if(ms[index]<0)
-			return ms[index]==-1;
-		if(t.ts[ms[index]]==0)
-			return match(t,2*index+1);
-		else 
-			return match(t,2*index+2);
-	}
-	@Override
-	public Object clone() {
-		return new MatchDT(ms.clone(), TAG_SIZE);
-	}
-	@Override
-	public void mutate() {
-		int ind= rand.nextInt(this.ms.length);
-		while(this.ms[ind] <0)
-			ind = rand.nextInt(this.ms.length);
-		this.ms[ind] = rand.nextInt(TAG_SIZE);
-	}
-	@Override
-	public String toString() {
-		return writeNode(0);
-	}
-	
-	public String writeNode(int i)
-	{
-		if(ms[i]<0)
-			return ""+ms[i];
-		else return "("+ms[i]+"("+writeNode(i*2+1)+")("+writeNode(i*2+2)+"))";
-	}
-	
-	public int hashCode() {
-		int hash = 0;
-		for(int i = 0; i < ms.length; i++) hash += (ms[i] + 1) + (TAG_SIZE+1) * i;
-		return hash;
-	}
-	
-	@Override
-	public Tag genCompliment() {
-		return null;
-	}
+    public static final int GENERATE_BLANK=0;
+    public static final int GENERATE_RANDOM=1;
+
+    public DTNode root;
+    int tagSize;
+
+    public MatchDT(int x, int tagSize)
+    {
+        this.tagSize = tagSize;
+        ArrayList<Integer> listOfInts = new ArrayList<Integer>();
+        for(int i = 0; i < tagSize; i++) listOfInts.add(i);
+        switch (x) {
+            case GENERATE_BLANK: break;
+            case GENERATE_RANDOM:
+                this.root = DTNode.generateRandomNode(listOfInts);
+                this.root.prune();
+                break;
+            default:break;
+        }
+
+    }
+
+    @Override
+    public boolean matchWith(Tag t) {
+        return this.root.match(t);
+    }
+
+    @Override
+    public Object clone() {
+        MatchDT dt = new MatchDT(GENERATE_BLANK,tagSize);
+        dt.root = (DTNode) this.root.clone();
+        return dt;
+
+    }
+
+    public void mutate()
+    {
+        ArrayList<Integer> listOfInts = new ArrayList<Integer>();
+        for(int i = 0; i < tagSize; i++) listOfInts.add(i);
+        this.root = this.root.mutate(listOfInts);
+        this.root.prune();
+    }
+    @Override
+    public String toString() {
+        return root.toString();
+    }
+    @Override
+    public boolean equals(Object obj)
+    {
+        return this.root.equals(((MatchDT)obj).root);
+    }
+    @Override
+    public void mutate(double prob) {
+        // TODO Auto-generated method stub
+
+    }
+    @Override
+    public Tag genCompliment() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    @Override
+    public int hashCode() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
 }

@@ -1,10 +1,10 @@
 package sim;
 
+import evollrn.Constraints;
+
 import java.util.ArrayList;
-import java.util.Random;
 
 public class WeightedList<T> {
-	static Random rand = Parameters.rand;
 	
 	class WTuple { T item; double weight; }
 	ArrayList<WTuple> items = new ArrayList<WTuple>();
@@ -18,7 +18,7 @@ public class WeightedList<T> {
 	}
 	
 	public T probSelect() {
-		double r = rand.nextDouble() * size;
+		double r = Constraints.rand.nextDouble() * size;
 		T i1 = items.get(0).item;
 		for(WTuple i2: items) {
 			i1 = i2.item;

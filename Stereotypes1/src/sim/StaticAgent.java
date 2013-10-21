@@ -1,4 +1,3 @@
-
 package sim;
 
 public class StaticAgent extends Agent {

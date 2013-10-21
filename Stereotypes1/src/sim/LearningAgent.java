@@ -2,10 +2,8 @@ package sim;
 
 import java.util.Random;
 
-
-
 public class LearningAgent extends Agent {
-	public static final Random rand = Parameters.rand;
+	public static final Random rand = new Random();
 
 	public LearningAgent(Tag t, Match m) {
 		super(t, m);
@@ -15,8 +13,8 @@ public class LearningAgent extends Agent {
 		int ind = rand.nextInt(this.t.ts.length);
 		this.t.ts[ind] = (this.t.ts[ind] == 0 ? 1:0);
 	}
-	public void mutateMatch() {
-		this.m.mutate();
+	public void mutateMatch(double prob) {
+		this.m.mutate(prob);
 	}
 	@Override
 	public String toString() {

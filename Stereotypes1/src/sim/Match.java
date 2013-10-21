@@ -1,4 +1,3 @@
-
 package sim;
 
 public abstract class Match {
@@ -19,7 +18,7 @@ public abstract class Match {
 		return null;
 	}
 
-	public abstract void mutate();
+	public abstract void mutate(double prob);
 	
 	@Override
 	public boolean equals(Object obj) 
