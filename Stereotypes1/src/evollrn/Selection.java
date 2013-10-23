@@ -33,7 +33,7 @@ public abstract class Selection {
             for(int i = 0; i < c.POOL_SIZE; i++) {
                 LearningAgent a = pool[i];
                 int rIndex;
-                while(pool[(rIndex = rand.nextInt(c.POOL_SIZE))] == a);
+                while((rIndex = rand.nextInt(c.POOL_SIZE)) == i);
                 LearningAgent b = pool[rIndex];
                 double aF = ep.fitness(a), bF = ep.fitness(b);
                 if(bF > aF) {
@@ -44,11 +44,11 @@ public abstract class Selection {
 
                 if(rand.nextDouble() < c.SELECT_TOURNAMENT_P)
                 {
-                    newL[i] = c.lgen.genAgent(new Tag(a.t),(Match)a.m.clone());
+                    newL[i] = c.lGen.genAgent(new Tag(a.t),(Match)a.m.clone());
                 }
                 else
                 {
-                    newL[i] = c.lgen.genAgent(new Tag(b.t),(Match)b.m.clone());
+                    newL[i] = c.lGen.genAgent(new Tag(b.t),(Match)b.m.clone());
                 }
             }
             return newL;

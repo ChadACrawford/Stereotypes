@@ -28,8 +28,11 @@ public class Constraints {
 	public int HAMMING_MIN = 2;
 	public int HAMMING_MAX = 4;
 	
-	public LAGenerator lgen = new EvolLAgent.Generator();
+	public LAGenerator lGen = new EvolLAgent.Generator();
 	public StaticAgentGenerator SAG = new StaticAgentGenerator.SAGSim1(TAG_SIZE,HAMMING_MIN,HAMMING_MAX);
-			//new StaticAgentGenerator.SAGSim1(TAG_SIZE,HAMMING_MIN,HAMMING_MAX);
-	public PopulationGen LAG = new PopulationGen.LAG1(TAG_SIZE, lgen);
+	public PopulationGen LAG = new PopulationGen.LAG1(TAG_SIZE, lGen);
+
+    public Selection EVOLVE_S;
+    public Crossover EVOLVE_C;
+    public Mutation  EVOLVE_M;
 }
