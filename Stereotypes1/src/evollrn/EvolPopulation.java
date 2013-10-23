@@ -151,8 +151,7 @@ class EvolPopulation {
 //		return newL;
 //	}
 
-	public LearningAgent[] selectTournament2() 
-	{
+	public LearningAgent[] selectTournament2() {
 		LearningAgent[] newL = new LearningAgent[c.POOL_SIZE];
 		for(int i = 0; i < c.POOL_SIZE; i++) {
 			LearningAgent a = lagents[i];
