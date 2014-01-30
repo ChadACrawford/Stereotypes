@@ -12,7 +12,7 @@ class EvolPopulation {
 	Simulator sim;
 	PopulationGen lgen;
 	
-	public final boolean DEBUG_VERBOSE = true;
+	public final boolean DEBUG_VERBOSE = false;
 	
 	public void debug(String s) {
 		if(DEBUG_VERBOSE) System.out.print(s);
@@ -36,7 +36,6 @@ class EvolPopulation {
 	
 	public EvolPopulation(Constraints con) {
 		c = con;
-		Results.initialize();
 		//Sag 1 Statics have Random matching and random tag
 		//Sag 2 Statics have generalized from same matching string but different Tags
 		//Sag 3 
@@ -45,7 +44,7 @@ class EvolPopulation {
 		lagents = lgen.generate(c.POOL_SIZE);
 
         c.EVOLVE_S = new Selection.Tournament(this, c);
-        c.EVOLVE_C = new Crossover.Uniform();
+        c.EVOLVE_C = new Crossover.Asexual();
         c.EVOLVE_M = new Mutation.Bit(c);
 		//create an optimal agent
 		//lagents[0].t = new Tag(new int[]{0,0,0,0,0,0,0,0});
@@ -67,7 +66,7 @@ class EvolPopulation {
 	public void evolve() {
 //		printFitnessTable();
 		for(int i = 0; i < c.LIFETIME; i++) {
-//			r = new Results(i,c);
+			r = new Results(i,c);
 //			//System.out.println(lagents[0]);
 //
 //			lagents = selectTournament2();
@@ -76,12 +75,17 @@ class EvolPopulation {
 ////				r.addMember(a);
 ////				r.addPayoff(fitness(a));
 ////			}
-//			//int[] ps = fitnessTable();
-//			//double[] ps1 = new double[]{ps[0],ps[1],ps[2],ps[3]};
-//			//r.payoffs[i] = ps1;
+			int[] ps = fitnessTable();
+			r.plays = ps;
+            r.payoffs = new double[lagents.length];
+            for(int j = 0; j < lagents.length; j++) {
+                r.payoffs[j] = fitness(lagents[j]);
+            }
 //			//int tagCount = r.Tgroups.size();
 //			int matCount = r.Mgroups.size();
-			if((i+1) % 100 == 0) {
+			if(DEBUG_VERBOSE && (i+1) % 100 == 0) {
+                System.out.println("Round " + i + ":");
+                printFitnessTable();
 				//int[] ps = fitnessTable();
 				//System.out.format("%4d %10d %10d %10d %10d%n", i, ps[0], ps[1], ps[2], ps[3]);
             }
@@ -106,18 +110,23 @@ class EvolPopulation {
 //				r.finish();
 //			if(tagCount <= 1 && matCount <= 1) break;
             //System.out.println(lagents.length);
+            r.finish();
             LearningAgent[] sPop = c.EVOLVE_S.select(lagents);
             LearningAgent[] nPop = new EvolLAgent[c.POOL_SIZE];
             for(int j = 0; j < c.POOL_SIZE; j++) {
                 int r1 = rand.nextInt(nPop.length),r2=rand.nextInt(nPop.length);
                 LearningAgent e1 = sPop[r1], e2 = sPop[r2];
-                nPop[j] = new EvolLAgent(c.EVOLVE_C.cross(e1.t,e2.t), c.EVOLVE_C.cross(e1.m,e2.m));
+                if(fitness(e1) < fitness(e2)) {
+                    LearningAgent temp = e1;
+                    e1 = e2; e2 = temp;
+                }
+                nPop[j] = c.lGen.genAgent(c.EVOLVE_C.cross(e1.t,e2.t), c.EVOLVE_C.cross(e1.m,e2.m));
                 nPop[j].mutateTag(c); nPop[j].mutateMatch(c);
                 nPop[j].learn(sim.interactWith(nPop[j]));
             }
             lagents = nPop;
 		}
-		Results.closeAll();
+		//Results.closeAll();
 //		System.out.println(lagents[0].m);
 	}
 
@@ -133,95 +142,12 @@ class EvolPopulation {
 		return weight;
 	}
 
-//	public EvolLAgent[] selectFProportionate() {
-//		//generate fitness utility
-//		WeightedList<EvolLAgent> wl = new WeightedList<EvolLAgent>();
-//		for(LearningAgent a: lagents) {
-//			double weight = fitness(a);
-//			wl.add(new EvolLAgent(new Tag(a.t),MatchString.copy(a.m)), weight);
-//		}
-//
-//		EvolLAgent[] newL = new EvolLAgent[c.POOL_SIZE];
-//		for(int i = 0; i < newL.length; i++) newL[i] = wl.probSelect();
-//
-//		return newL;
-//	}
-
-//	public EvolLAgent[] selectTournament() 
-//	{
-//		EvolLAgent[] newL = new EvolLAgent[c.POOL_SIZE];
-//		for(int i = 0; i < c.POOL_SIZE; i++) {
-//			LearningAgent a = lagents[rand.nextInt(c.POOL_SIZE)],
-//					b = lagents[rand.nextInt(c.POOL_SIZE)];
-//			double aF = fitness(a), bF = fitness(b);
-//			if(bF > aF) { 
-//				LearningAgent temp = a;
-//				a = b;
-//				b = temp;
-//			}
-//			else
-//				newL[i] = new EvolLAgent(new Tag(b.t),(Match) b.m.clone());
-//		}
-//		return newL;
-//	}
-
-	public LearningAgent[] selectTournament2() {
-		LearningAgent[] newL = new LearningAgent[c.POOL_SIZE];
-		for(int i = 0; i < c.POOL_SIZE; i++) {
-			LearningAgent a = lagents[i];
-			int rIndex;
-			while(lagents[(rIndex = rand.nextInt(c.POOL_SIZE))] == a);
-			LearningAgent b = lagents[rIndex];
-			double aF = fitness(a), bF = fitness(b);
-			if(bF > aF) {
-				LearningAgent temp = a;
-				a = b;
-				b = temp;
-			}
-			
-			if(rand.nextDouble() < c.SELECT_TOURNAMENT_P)
-			{
-				newL[i] = c.lGen.genAgent(new Tag(a.t),(Match)a.m.clone());
-				if(lagents[i] != a) {
-					r.imitateCount++;
-					//newL[i].mutateMatch(c);
-				}
-				else newL[i].m = a.m;
-				newL[i].mutateTag(c);
-			}
-			else
-			{
-				newL[i] = c.lGen.genAgent(new Tag(b.t),(Match)b.m.clone());
-				if(lagents[i] != b) {
-					r.imitateCount++;
-					//newL[i].mutateMatch(c);
-				}
-				else newL[i].m = b.m;
-				newL[i].mutateTag(c);
-			}
-			//newL[i].optimizeMatch(sim.interactWith(newL[i]));
-			newL[i].learn(sim.interactWith(newL[i]));
-		}
-		return newL;
-	}
-	
-	public LearningAgent[] mutate() {
-
-		for(LearningAgent a: lagents) {
-			if(rand.nextDouble() <= c.TAG_MUTATE_RATE) {
-				a.mutateTag(c);
-			}
-
-			if(rand.nextDouble() <= c.MATCH_MUTATE_RATE) {
-				a.mutateMatch(c);
-			}
-		}
-		return lagents;
-	}
-
 	public int[] fitnessTable() {
-		int cc = 0, dcc = 0, cdc = 0, dcdc = 0;
+//        Evolving = column player, Static = row player
+//        Format: EvolvingStatic
+		int cc = 0, dcc = 0, cdc = 0, dcdc = 0; int n = 0;
 		for(LearningAgent a: lagents) {
+            n += 1;
 			int[] pays = new int[4];
 			Simulator.gTuple[] res = sim.interactWith(a);
 			for(Simulator.gTuple r: res) {
@@ -231,9 +157,54 @@ class EvolPopulation {
 				else pays[3] += 1;
 			}
 			cc += pays[0]; dcc += pays[1]; cdc += pays[2]; dcdc += pays[3];
+            //if(DEBUG_VERBOSE) System.out.format("%16s %7d %7d%n",a.m,pays[0],pays[3]);
 		}
-		return new int[] {cc ,dcc, cdc, dcdc};
+		return new int[] {cc ,dcc, cdc, dcdc, cc+dcdc};
 	}
+
+    public int[] perfVector(Agent a) {
+        Simulator.gTuple[] res = sim.interactWith(a);
+        int[] ret = new int[4];
+        for(Simulator.gTuple r: res) {
+            if (r.c1 && r.c2) ret[0] += 1;
+            else if(!r.c1 && r.c2) ret[1] += 1;
+            else if(r.c1 && !r.c2) ret[2] += 1;
+            else ret[3] += 1;
+        }
+        return ret;
+    }
+
+    public double[] bestPure() {
+        return new double[] {bestTag(new PureMatch(true)), bestTag(new PureMatch(false))};
+    }
+
+    public double bestTag(Match m) {
+        Tag[] tags = genAllTags();
+        int maxCoop = 0;
+        for(Tag t: tags) {
+            int[] r = perfVector(new Agent(t,m));
+            int nCoop = r[0] + r[3];
+            if(nCoop > maxCoop) maxCoop = nCoop;
+        }
+        return  maxCoop / (1. * c.STATIC_POOL_SIZE);
+    }
+
+    public Tag[] genAllTags() {
+        Tag[] ret = new Tag[(int)Math.pow(2,c.TAG_SIZE)];
+        for(int i = 0; i < ret.length; i++) {
+            int[] ts = new int[c.TAG_SIZE];
+            int marker = i;
+            for(int j = c.TAG_SIZE-1; j >= 0; j--) {
+                if(marker - Math.pow(2,j) >= 0) {
+                    ts[j] = 1;
+                    marker -= Math.pow(2,j);
+                }
+                else ts[j] = 0;
+            }
+            ret[i] = new Tag(ts);
+        }
+        return ret;
+    }
 
 	public void printFitnessTable() {
 		int[] pays = fitnessTable();
@@ -251,15 +222,112 @@ class EvolPopulation {
 	}
 
 	public static void main(String[] args) {
+        Results.initialize();
 		Constraints c = new Constraints();
 		CalcGameMatrix.arrangeGameMatrixForHD(c);
+        c.SAG = new StaticAgentGenerator.SAGSim1(8,2,4);
+        LAGenerator wGen = new WekaLAgent.Generator(new WekaSetup(new Constraints()));
+        PopulationGen wPG = new PopulationGen.LAGNullMatch(8,wGen);
+        c.lGen = wGen; c.LAG = wPG;
 		EvolPopulation esim = new EvolPopulation(c);
 		esim.evolve();
+
+        Simulator.gTuple[] res = esim.sim.interactWith(esim.lagents[0]);
+        for(Simulator.gTuple g: res) {
+            //System.out.println((g.c1 == g.c2) + ":\t" + g.c1 + "\t" + g.c2 + "\t" + g.t2);
+        }
 //		System.out.println();
 		//esim.showAllLearningAgents();
 		//esim.showAllStaticAgents();
 //		System.out.println("Imitations :"+Results.imitateCount);
 //		System.out.println("Similarpeople :"+Results.similarCount);
+
 	}
 
 }
+
+//	public EvolLAgent[] selectFProportionate() {
+//		//generate fitness utility
+//		WeightedList<EvolLAgent> wl = new WeightedList<EvolLAgent>();
+//		for(LearningAgent a: lagents) {
+//			double weight = fitness(a);
+//			wl.add(new EvolLAgent(new Tag(a.t),MatchString.copy(a.m)), weight);
+//		}
+//
+//		EvolLAgent[] newL = new EvolLAgent[c.POOL_SIZE];
+//		for(int i = 0; i < newL.length; i++) newL[i] = wl.probSelect();
+//
+//		return newL;
+//	}
+
+//	public EvolLAgent[] selectTournament()
+//	{
+//		EvolLAgent[] newL = new EvolLAgent[c.POOL_SIZE];
+//		for(int i = 0; i < c.POOL_SIZE; i++) {
+//			LearningAgent a = lagents[rand.nextInt(c.POOL_SIZE)],
+//					b = lagents[rand.nextInt(c.POOL_SIZE)];
+//			double aF = fitness(a), bF = fitness(b);
+//			if(bF > aF) {
+//				LearningAgent temp = a;
+//				a = b;
+//				b = temp;
+//			}
+//			else
+//				newL[i] = new EvolLAgent(new Tag(b.t),(Match) b.m.clone());
+//		}
+//		return newL;
+//	}
+
+//	public LearningAgent[] selectTournament2() {
+//		LearningAgent[] newL = new LearningAgent[c.POOL_SIZE];
+//		for(int i = 0; i < c.POOL_SIZE; i++) {
+//			LearningAgent a = lagents[i];
+//			int rIndex;
+//			while(lagents[(rIndex = rand.nextInt(c.POOL_SIZE))] == a);
+//			LearningAgent b = lagents[rIndex];
+//			double aF = fitness(a), bF = fitness(b);
+//			if(bF > aF) {
+//				LearningAgent temp = a;
+//				a = b;
+//				b = temp;
+//			}
+//
+//			if(rand.nextDouble() < c.SELECT_TOURNAMENT_P)
+//			{
+//				newL[i] = c.lGen.genAgent(new Tag(a.t),(Match)a.m.clone());
+//				if(lagents[i] != a) {
+//					r.imitateCount++;
+//					//newL[i].mutateMatch(c);
+//				}
+//				else newL[i].m = a.m;
+//				newL[i].mutateTag(c);
+//			}
+//			else
+//			{
+//				newL[i] = c.lGen.genAgent(new Tag(b.t),(Match)b.m.clone());
+//				if(lagents[i] != b) {
+//					r.imitateCount++;
+//					//newL[i].mutateMatch(c);
+//				}
+//				else newL[i].m = b.m;
+//				newL[i].mutateTag(c);
+//			}
+//			//newL[i].optimizeMatch(sim.interactWith(newL[i]));
+//			newL[i].learn(sim.interactWith(newL[i]));
+//		}
+//		return newL;
+//	}
+
+//	public LearningAgent[] mutate() {
+//
+//		for(LearningAgent a: lagents) {
+//			if(rand.nextDouble() <= c.TAG_MUTATE_RATE) {
+//				a.mutateTag(c);
+//			}
+//
+//			if(rand.nextDouble() <= c.MATCH_MUTATE_RATE) {
+//				a.mutateMatch(c);
+//			}
+//		}
+//		return lagents;
+//	}

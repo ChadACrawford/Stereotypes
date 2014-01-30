@@ -32,12 +32,12 @@ public class CalcGameMatrix {
 	{
 		double K = Math.pow(2.0/3,c.TAG_SIZE);
 		double a=1;
-		double b=-(a*K)/(1-K);
+//		double b=-(a*K)/(1-K);
 		// a*k +(1-k)*b ~= 0
-		c.PAYOFF_CC = 1;
-		c.PAYOFF_DC = c.PAYOFF_CC-a;
-		c.PAYOFF_DD = 0;
-		c.PAYOFF_CD = c.PAYOFF_DD+b;
+		c.PAYOFF_CC = 4;
+		c.PAYOFF_DC = c.PAYOFF_CC - (1-K)/K * (c.PAYOFF_DD - a);
+		c.PAYOFF_DD = 2;
+		c.PAYOFF_CD = a;
 
 //		System.out.println(c.PAYOFF_CC);
 //		System.out.println(c.PAYOFF_DC);
@@ -48,25 +48,34 @@ public class CalcGameMatrix {
 	{
 		double K = calcHmmForRange(c.HAMMING_MIN,c.HAMMING_MAX, c);
 		double a=1;
-		double b=-(a*K)/(1-K);
+//		double b=-(a*K)/(1-K);
 //		System.out.println(a);
 //		System.out.println(b);
 		// a*k +(1-k)*b ~= 0
-		c.PAYOFF_CC = 1;
-		c.PAYOFF_DC = c.PAYOFF_CC-a;
-		c.PAYOFF_DD = 0;
-		c.PAYOFF_CD = c.PAYOFF_DD+b;
-	}
+//		c.PAYOFF_CC = 1;
+//		c.PAYOFF_DC = c.PAYOFF_CC-a;
+//		c.PAYOFF_DD = 0;
+//		c.PAYOFF_CD = c.PAYOFF_DD+b;
+        c.PAYOFF_CC = 4;
+        c.PAYOFF_DC = c.PAYOFF_CC - (1-K)/K * (c.PAYOFF_DD - a);
+        c.PAYOFF_DD = 2;
+        c.PAYOFF_CD = a;
+
+    }
 	public static void arrangeGameMatrixForDT(Constraints c)
 	{
 		double K = 0.5;
 		double a=1;//rand.nextDouble();
-		double b=-(a*K)/(1-K);
+//		double b=-(a*K)/(1-K);
 		// a*k +(1-k)*b ~= 0
-		c.PAYOFF_CC = 1;
-		c.PAYOFF_DC = c.PAYOFF_CC-a;
-		c.PAYOFF_DD = 0;
-		c.PAYOFF_CD = c.PAYOFF_DD+b;
+//		c.PAYOFF_CC = 1;
+//		c.PAYOFF_DC = c.PAYOFF_CC-a;
+//		c.PAYOFF_DD = 0;
+//		c.PAYOFF_CD = c.PAYOFF_DD+b;
+        c.PAYOFF_CC = 4;
+        c.PAYOFF_DC = c.PAYOFF_CC - (1-K)/K * (c.PAYOFF_DD - a);
+        c.PAYOFF_DD = 2;
+        c.PAYOFF_CD = a;
 
 //		System.out.println(c.PAYOFF_CC);
 //		System.out.println(c.PAYOFF_DC);

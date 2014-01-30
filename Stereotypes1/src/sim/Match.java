@@ -1,6 +1,8 @@
 package sim;
 
 public abstract class Match {
+    private static int ID_COUNT = 0;
+    protected final int id = ID_COUNT++;
 	public int ms[];
 	public Match() {
 
@@ -33,6 +35,8 @@ public abstract class Match {
 	}
 	
 	public abstract Tag genCompliment();
-	
-	public abstract int hashCode();
+
+    public String toString() {
+          return this.getClass().toString() + "@" + id;
+    }
 }

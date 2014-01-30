@@ -13,21 +13,30 @@ public class EvolLoader {
 	}
 	
 	public static void runTrials(LAGenerator lgen, PopulationGen pg, StaticAgentGenerator SAG, int val) {
-		double ts[] = new double[4];
+		double ts[] = new double[7];
 		Constraints c = new Constraints();
 		if(val == 0) CalcGameMatrix.arrangeGameMatrixForTS(c);
 		else if(val == 1) CalcGameMatrix.arrangeGameMatrixForHD(c);
 		else CalcGameMatrix.arrangeGameMatrixForDT(c);
 		c.lGen = lgen; c.LAG = pg;
 		c.SAG = SAG;
-		for(int t = 0; t < 20; t++) {
+        int trials = 20;
+		for(int t = 0; t < trials; t++) {
 			EvolPopulation ep = new EvolPopulation(c);
 			ep.evolve();
+            if(lgen.getClass() == WekaLAgent.Generator.class) {
+                ((WekaLAgent.Generator)lgen).ws1 = new WekaSetup(c);
+            }
 			int[] ps = ep.fitnessTable();
 			for(int i = 0; i < 4; i++) ts[i] += ps[i];
+            double[] pures = ep.bestPure();
+            ts[5] += pures[0];
+            ts[6] += pures[1];
 		}
-		for(int i = 0; i < 4; i++) ts[i] /= (20 * c.POOL_SIZE * c.STATIC_POOL_SIZE);
-		System.out.format("%10f %10f %10f %10f%n", ts[0], ts[1], ts[2], ts[3]);
+		for(int i = 0; i < 4; i++) ts[i] /= (trials * c.POOL_SIZE * c.STATIC_POOL_SIZE);
+        ts[4] = ts[0] + ts[3];
+        ts[5] /= trials; ts[6] /= trials;
+		System.out.format("%10f %10f %10f %10f %10f %10f %10f %n", ts[0], ts[1], ts[2], ts[3], ts[4], ts[5], ts[6]);
 	}
 	
 	public static void runHammingTest1(LAGenerator lgen, PopulationGen PG) {
@@ -69,6 +78,7 @@ public class EvolLoader {
 	}
 	
 	public static void main(String[] args) throws Exception {
+        Results.initialize();
 		//ternary learner
 		LAGenerator tGen = new EvolLAgent.Generator();
 		PopulationGen tPG = new PopulationGen.LAGMatch1(8, tGen);
@@ -90,15 +100,15 @@ public class EvolLoader {
 		//DT static
 		StaticAgentGenerator dSAG = new StaticAgentGenerator.SAGDT1(8);
 
-//		runTrials(tGen,tPG,tSAG,0);
-//		runTrials(dGen,dPG,tSAG,0);
-//		runTrials(wGen,wPG,tSAG,0);
-//		runTrials(tGen,tPG,hSAG,1);
-//		runTrials(dGen,dPG,hSAG,1);
-//		runTrials(wGen,wPG,hSAG,1);
-//		runTrials(tGen,tPG,dSAG,2);
-//		runTrials(dGen,dPG,dSAG,2);
-//		runTrials(wGen,wPG,dSAG,2);
+		//runTrials(tGen,tPG,tSAG,0);
+		//runTrials(dGen,dPG,tSAG,0);
+		//runTrials(wGen,wPG,tSAG,0);
+		runTrials(tGen,tPG,hSAG,1);
+		//runTrials(dGen,dPG,hSAG,1);
+		//runTrials(wGen,wPG,hSAG,1);
+		//runTrials(tGen,tPG,dSAG,2);
+		//runTrials(dGen,dPG,dSAG,2);
+		//runTrials(wGen,wPG,dSAG,2);
 //		runHammingTest1(wGen, wPG);
 //		runHammingTest1(tGen, tPG);
 //		//WekaTest1();
@@ -106,8 +116,9 @@ public class EvolLoader {
 		//RandTest1(wGen,wPG);
 //		RandTest1(tGen,tPG);
 //		runIndpVar(dGen,dPG);
-		runGroups(wGen,wPG);
-	}
+//		runGroups(tGen,tPG);
+        Results.closeAll();
+    }
 	
 	public static void RandTest1(LAGenerator lgen, PopulationGen pg) {
 		System.out.println("RANDOM STATIC DATA FOR: " + lgen.getClass() + ", " + pg.getClass());

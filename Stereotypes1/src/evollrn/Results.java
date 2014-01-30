@@ -14,6 +14,7 @@ public class Results {
 		"tag_groups.data",
 		"mat_groups.data",
 		"pay_stats.data",
+        "outcome_stats.data",
 		"identical.data",
 		"similar.data"
 	};
@@ -33,7 +34,8 @@ public class Results {
 			dWriters = new DataWriter[] {
 					new DataTagGroups(),
 					new DataMatchGroups(),
-					new AgentFitnessScores()
+					new AgentFitnessScores(),
+                    new AgentOutcomeScores()
 					};
 		} catch(IOException e) {
 			e.printStackTrace();
@@ -75,7 +77,7 @@ public class Results {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void addPayoff(double pay) {
 		payoffs[pCount++] = pay;
 	}
@@ -145,18 +147,37 @@ public class Results {
 			fw.write(genRow(r.genNumber,mean,stdev,ubound,lbound,min,max));
 		}
 	}
-	
+
+    static class AgentOutcomeScores extends DataWriter {
+        @Override
+        void write(Results r, FileWriter fw) throws IOException {
+
+            String row = genRow(r.genNumber, r.plays[0] + r.plays[3]);
+//            DescriptiveStatistics ds = new DescriptiveStatistics();
+//            double mean = ds.getPercentile(50),						//2
+//                    stdev = 0,		//3
+//                    ubound = ds.getPercentile(75),					//4
+//                    lbound = ds.getPercentile(25),					//5
+//                    min = ds.getMin(),						//6
+//                    max = ds.getMax();						//7
+//            String row = genRow(r.genNumber,mean,stdev,lbound,min,max,ubound);
+            //System.out.println(row);
+            fw.write(row + "\n");
+        }
+    }
+
 	static class AgentFitnessScores extends DataWriter {
 		@Override
 		void write(Results r, FileWriter fw) throws IOException {
 			DescriptiveStatistics ds = new DescriptiveStatistics(r.payoffs);
-			double mean = ds.getPercentile(50),						//2
+			double mean = ds.getMean(),//ds.getPercentile(50),						//2
+                    median = ds.getPercentile(50),
 					stdev = 0,		//3
 					ubound = ds.getPercentile(75),					//4
 					lbound = ds.getPercentile(25),					//5
 					min = ds.getMin(),						//6
 					max = ds.getMax();						//7
-			String row = genRow(r.genNumber,mean,stdev,lbound,min,max,ubound);
+			String row = genRow(r.genNumber,mean,stdev,min,lbound,median,ubound,max);
 			//System.out.println(row);
 			fw.write(row + "\n");
 		}

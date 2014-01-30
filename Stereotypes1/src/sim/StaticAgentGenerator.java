@@ -2,9 +2,9 @@ package sim;
 
 import evollrn.Constraints;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
-import java.util.ArrayList;
 
 public abstract class StaticAgentGenerator {
 	public final int tagSize;

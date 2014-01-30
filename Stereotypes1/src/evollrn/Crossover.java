@@ -1,6 +1,7 @@
 package evollrn;
 
 import sim.Match;
+import sim.MatchDT;
 import sim.MatchString;
 import sim.Tag;
 
@@ -29,5 +30,18 @@ public abstract class Crossover {
 		public MatchString cross(MatchString a, MatchString b) {
 			return new MatchString(cross(a.ms,b.ms));
 		}
+
+        public MatchDT cross(MatchDT a, MatchDT b) {
+            //TODO: Implement sexual reproduction for MatchDT
+            return (MatchDT)a.clone();
+        }
 	}
+
+    public static class Asexual extends Crossover {
+
+        @Override
+        public Tag cross(Tag a, Tag b) {
+            return new Tag(a);
+        }
+    }
 }

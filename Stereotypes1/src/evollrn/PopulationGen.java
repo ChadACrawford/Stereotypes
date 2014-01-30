@@ -66,6 +66,7 @@ abstract class PopulationGen {
 				Tag t = new Tag(randStr(tagSize,2));
 				//Match m = new MatchString(randStr(tagSize,3));
 				Match m = new MatchDT(MatchDT.GENERATE_RANDOM,tagSize);
+                //System.out.println(m);
 				agents[i] = gen.genAgent(t,m);
 			}
 			return agents;

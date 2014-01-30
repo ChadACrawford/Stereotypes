@@ -45,10 +45,11 @@ public class MatchDT extends Match {
         this.root = this.root.mutate(listOfInts);
         this.root.prune();
     }
-    @Override
-    public String toString() {
-        return root.toString();
-    }
+//    @Override
+//    public String toString() {
+//        return this.
+//        //return root.toString();
+//    }
     @Override
     public boolean equals(Object obj)
     {

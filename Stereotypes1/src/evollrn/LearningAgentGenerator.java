@@ -14,6 +14,7 @@ abstract class LearningAgentGenerator {
 	public LearningAgentGenerator(int tagSize) { this.tagSize = tagSize; }
 
 	public abstract LearningAgent[] generate(int amount);
+    //public abstract LearningAgent generate(Tag t, Match m);
 
 	public static int[] randStr(int size, int rng) {
 		int[] ret = new int[size];

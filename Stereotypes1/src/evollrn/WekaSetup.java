@@ -6,6 +6,7 @@ import weka.core.Attribute;
 import weka.core.DenseInstance;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.filters.unsupervised.attribute.Standardize;
 
 import java.util.ArrayList;
 
@@ -14,6 +15,8 @@ public class WekaSetup {
 	private static ArrayList<String> attrVals = new ArrayList<String>();
 	private static ArrayList<String> clssVals = new ArrayList<String>();
 	private static final boolean __INITIALIZED = CLASS_INIT();
+
+    public final WekaMatch[] wms;
 	
 	private static boolean CLASS_INIT() {
 		attrVals.add("0");
@@ -30,6 +33,9 @@ public class WekaSetup {
 	public WekaSetup(Constraints c) {
 		this.c = c;
 		initialize();
+
+        wms = new WekaMatch[(int)Math.pow(2,c.TAG_SIZE)];
+        for(int i = 0; i < wms.length; i++) wms[i] = new WekaMatch(this);
 	}
 	
 	public void initialize() {
@@ -47,7 +53,14 @@ public class WekaSetup {
 		Instances trSet = new Instances("Training set",attrSet,c.STATIC_POOL_SIZE);
 		trSet.setClassIndex(attrSet.size()-1);
 		for(Simulator.gTuple p: perf) trSet.add(convTag(p.t2,p.c2,trSet));
-		return trSet;
+        try {
+            Standardize filter = new Standardize();
+            filter.setInputFormat(trSet);
+            trSet = Standardize.useFilter(trSet,filter);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return trSet;
 	}
 	
 	public Instance convTag(Tag t, boolean C, Instances trSet) {

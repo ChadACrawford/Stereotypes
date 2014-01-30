@@ -10,7 +10,6 @@ package evollrn;
 
 import sim.*;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public abstract class Mutation {

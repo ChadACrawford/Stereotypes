@@ -16,14 +16,14 @@ public class Constraints {
 	public final int LIFETIME = 1000;
 	public final boolean ELITISM = false;
 	
-	public double PAYOFF_CC = 1;
-	public double PAYOFF_DC = .01;
-	public double PAYOFF_CD = -.2;
-	public double PAYOFF_DD = 0.1;
+	public double PAYOFF_CC = 4;
+	public double PAYOFF_DC = 0;
+	public double PAYOFF_CD = 0;
+	public double PAYOFF_DD = 2;
 	
 	public double TAG_MUTATE_RATE = 0.001;
 	public double MATCH_MUTATE_RATE = 0.001;
-	public final double SELECT_TOURNAMENT_P = 1.0;
+	public final double SELECT_TOURNAMENT_P = 0.8;
 	
 	public int HAMMING_MIN = 2;
 	public int HAMMING_MAX = 4;

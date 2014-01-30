@@ -1,6 +1,7 @@
 package evollrn;
 
 import sim.Match;
+import sim.Simulator;
 import sim.Simulator.gTuple;
 import sim.Tag;
 
@@ -8,9 +9,11 @@ public class EvolLAgent extends LearningAgent {
 	public EvolLAgent(Tag t, Match m) {
 		super(t, m);
 	}
-	
-	@Override
-	public void learn(gTuple[] performance) {}
+
+    @Override
+    public void learn(gTuple[] perf) {
+        return;
+    }
 	
 	public void mutateTag(Constraints c)
 	{
