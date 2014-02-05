@@ -103,9 +103,9 @@ public class EvolLoader {
 		//runTrials(tGen,tPG,tSAG,0);
 		//runTrials(dGen,dPG,tSAG,0);
 		//runTrials(wGen,wPG,tSAG,0);
-		runTrials(tGen,tPG,hSAG,1);
+		//runTrials(tGen,tPG,hSAG,1);
 		//runTrials(dGen,dPG,hSAG,1);
-		//runTrials(wGen,wPG,hSAG,1);
+		runTrials(wGen,wPG,hSAG,1);
 		//runTrials(tGen,tPG,dSAG,2);
 		//runTrials(dGen,dPG,dSAG,2);
 		//runTrials(wGen,wPG,dSAG,2);

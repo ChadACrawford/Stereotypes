@@ -1,5 +1,6 @@
 package evollrn;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import sim.*;
 
 import java.util.Random;
@@ -12,7 +13,7 @@ class EvolPopulation {
 	Simulator sim;
 	PopulationGen lgen;
 	
-	public final boolean DEBUG_VERBOSE = false;
+	public final boolean DEBUG_VERBOSE = true;
 	
 	public void debug(String s) {
 		if(DEBUG_VERBOSE) System.out.print(s);
@@ -83,7 +84,7 @@ class EvolPopulation {
             }
 //			//int tagCount = r.Tgroups.size();
 //			int matCount = r.Mgroups.size();
-			if(DEBUG_VERBOSE && (i+1) % 100 == 0) {
+			if(DEBUG_VERBOSE && (i+1) % 1 == 0) {
                 System.out.println("Round " + i + ":");
                 printFitnessTable();
 				//int[] ps = fitnessTable();
@@ -111,21 +112,42 @@ class EvolPopulation {
 //			if(tagCount <= 1 && matCount <= 1) break;
             //System.out.println(lagents.length);
             r.finish();
-            LearningAgent[] sPop = c.EVOLVE_S.select(lagents);
-            LearningAgent[] nPop = new EvolLAgent[c.POOL_SIZE];
-            for(int j = 0; j < c.POOL_SIZE; j++) {
-                int r1 = rand.nextInt(nPop.length),r2=rand.nextInt(nPop.length);
-                LearningAgent e1 = sPop[r1], e2 = sPop[r2];
-                if(fitness(e1) < fitness(e2)) {
-                    LearningAgent temp = e1;
-                    e1 = e2; e2 = temp;
+
+            for(int t1 = 0; t1 < 100; t1++) {
+                LearningAgent[] sPop = c.EVOLVE_S.select(lagents);
+                LearningAgent[] nPop = new EvolLAgent[c.POOL_SIZE];
+                for(int j = 0; j < c.POOL_SIZE; j++) {
+                    int r1 = rand.nextInt(nPop.length),r2=rand.nextInt(nPop.length);
+                    LearningAgent e1 = sPop[r1], e2 = sPop[r2];
+                    if(fitness(e1) < fitness(e2)) {
+                        LearningAgent temp = e1;
+                        e1 = e2; e2 = temp;
+                    }
+                    nPop[j] = c.lGen.genAgent(c.EVOLVE_C.cross(e1.t,e2.t), c.EVOLVE_C.cross(e1.m,e2.m));
+                    nPop[j].mutateTag(c); //nPop[j].mutateMatch(c);
+                    nPop[j].learn(sim.interactWith(nPop[j]));
                 }
-                nPop[j] = c.lGen.genAgent(c.EVOLVE_C.cross(e1.t,e2.t), c.EVOLVE_C.cross(e1.m,e2.m));
-                nPop[j].mutateTag(c); nPop[j].mutateMatch(c);
-                nPop[j].learn(sim.interactWith(nPop[j]));
+                lagents = nPop;
             }
-            lagents = nPop;
-		}
+
+            for(int t2 = 0; t2 < 100; t2++) {
+                LearningAgent[] sPop = c.EVOLVE_S.select(lagents);
+                LearningAgent[] nPop = new EvolLAgent[c.POOL_SIZE];
+                for(int j = 0; j < c.POOL_SIZE; j++) {
+                    int r1 = rand.nextInt(nPop.length),r2=rand.nextInt(nPop.length);
+                    LearningAgent e1 = sPop[r1], e2 = sPop[r2];
+                    if(fitness(e1) < fitness(e2)) {
+                        LearningAgent temp = e1;
+                        e1 = e2; e2 = temp;
+                    }
+                    nPop[j] = c.lGen.genAgent(c.EVOLVE_C.cross(e1.t,e2.t), c.EVOLVE_C.cross(e1.m,e2.m));
+                    //nPop[j].mutateTag(c);
+                    nPop[j].mutateMatch(c);
+                    nPop[j].learn(sim.interactWith(nPop[j]));
+                }
+                lagents = nPop;
+            }
+        }
 		//Results.closeAll();
 //		System.out.println(lagents[0].m);
 	}
@@ -180,13 +202,25 @@ class EvolPopulation {
 
     public double bestTag(Match m) {
         Tag[] tags = genAllTags();
-        int maxCoop = 0;
+        int maxCoop = 99999999;
         for(Tag t: tags) {
             int[] r = perfVector(new Agent(t,m));
             int nCoop = r[0] + r[3];
-            if(nCoop > maxCoop) maxCoop = nCoop;
+            if(nCoop < maxCoop) maxCoop = nCoop;
         }
         return  maxCoop / (1. * c.STATIC_POOL_SIZE);
+    }
+
+    public double[] tagDistr(Match m) {
+        Tag[] tags = genAllTags();
+        double[] ret = new double[tags.length];
+        for(int i = 0; i < tags.length; i++) {
+            int[] r = perfVector(new Agent(tags[i],m));
+            int nCoop = r[0] + r[3];
+            ret[i] = nCoop;
+            //if(nCoop > maxCoop) maxCoop = nCoop;
+        }
+        return ret;
     }
 
     public Tag[] genAllTags() {
@@ -222,13 +256,54 @@ class EvolPopulation {
 	}
 
 	public static void main(String[] args) {
-        Results.initialize();
+        StaticAgentGenerator hSAG = new StaticAgentGenerator.SAGSim1(8, 2, 4);
+
+        int trials = 1000;
+        double[] means = new double[trials];
+        double[] stdevs = new double[trials];
+        for(int t = 0; t < trials; t++) {
+            Constraints c = new Constraints();
+            EvolPopulation esim = new EvolPopulation(c);
+            double at = esim.bestPure()[0];
+            means[t] = at;
+            //double[] at = esim.tagDistr(new PureMatch(true));
+            //DescriptiveStatistics ds = new DescriptiveStatistics(at);
+            //means[t] = ds.getMean();
+            //stdevs[t] = ds.getStandardDeviation();
+            //if(at > best) best = at;
+        }
+        DescriptiveStatistics ds = new DescriptiveStatistics(means);
+        System.out.println("Mean:" + ds.getMean());
+        System.out.println("StdDev:" + ds.getStandardDeviation());
+
+//        ds = new DescriptiveStatistics(stdevs);
+//        System.out.println("Mean:" + ds.getMean());
+//        System.out.println("StdDev:" + ds.getStandardDeviation());
+        /*Results.initialize();
 		Constraints c = new Constraints();
 		CalcGameMatrix.arrangeGameMatrixForHD(c);
-        c.SAG = new StaticAgentGenerator.SAGSim1(8,2,4);
+
+        LAGenerator tGen = new EvolLAgent.Generator();
+        PopulationGen tPG = new PopulationGen.LAGMatch1(8, tGen);
+
+        //DT learner
+        LAGenerator dGen = new EvolLAgent.Generator();
+        PopulationGen dPG = new PopulationGen.LAG1(8, tGen);
+
+        //WEKA learner
         LAGenerator wGen = new WekaLAgent.Generator(new WekaSetup(new Constraints()));
         PopulationGen wPG = new PopulationGen.LAGNullMatch(8,wGen);
-        c.lGen = wGen; c.LAG = wPG;
+
+        //ternary static
+        StaticAgentGenerator tSAG = new StaticAgentGenerator.SAG1(8);
+
+        //hamming static
+        StaticAgentGenerator hSAG = new StaticAgentGenerator.SAGSim1(8, 2, 4);
+
+        //DT static
+        StaticAgentGenerator dSAG = new StaticAgentGenerator.SAGDT1(8);
+
+        c.lGen = dGen; c.LAG = dPG; c.SAG = new StaticAgentGenerator.SAGSim1(8,2,4);
 		EvolPopulation esim = new EvolPopulation(c);
 		esim.evolve();
 
@@ -240,7 +315,7 @@ class EvolPopulation {
 		//esim.showAllLearningAgents();
 		//esim.showAllStaticAgents();
 //		System.out.println("Imitations :"+Results.imitateCount);
-//		System.out.println("Similarpeople :"+Results.similarCount);
+//		System.out.println("Similarpeople :"+Results.similarCount);*/
 
 	}
 

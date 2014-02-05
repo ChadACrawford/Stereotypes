@@ -13,7 +13,7 @@ public class Constraints {
 	
 	public final int TAG_SIZE = 8;
 	
-	public final int LIFETIME = 1000;
+	public final int LIFETIME = 10;
 	public final boolean ELITISM = false;
 	
 	public double PAYOFF_CC = 4;
@@ -21,8 +21,8 @@ public class Constraints {
 	public double PAYOFF_CD = 0;
 	public double PAYOFF_DD = 2;
 	
-	public double TAG_MUTATE_RATE = 0.001;
-	public double MATCH_MUTATE_RATE = 0.001;
+	public double TAG_MUTATE_RATE = 0.05;
+	public double MATCH_MUTATE_RATE = 0.05;
 	public final double SELECT_TOURNAMENT_P = 0.8;
 	
 	public int HAMMING_MIN = 2;
